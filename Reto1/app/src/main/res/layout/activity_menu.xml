@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+
+    android:orientation="vertical"
+    tools:context=".activityMenu">
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="match_parent"
+        android:layout_height="75dp"
+        android:layout_marginBottom="80dp"
+        android:fontFamily="serif-monospace"
+        android:gravity="center"
+        android:text="Tic Tac Toe"
+        android:textAlignment="center"
+        android:textSize="48sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/buttonStart"
+        style="@style/Widget.AppCompat.Button"
+        android:layout_width="161dp"
+        android:layout_height="82dp"
+        android:fontFamily="monospace"
+        android:text="Play"
+        android:textSize="20sp"
+        app:cornerRadius="50dp" />
+</LinearLayout>
