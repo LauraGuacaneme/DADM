@@ -2,6 +2,7 @@ package co.edu.unal.reto1
 
 import java.util.Random
 
+
 class TicTacToeGame {
     companion object {
         const val BOARD_SIZE = 9
@@ -9,6 +10,13 @@ class TicTacToeGame {
         const val COMPUTER_PLAYER = 'O'
         const val OPEN_SPOT = ' '
     }
+
+    // The computer's difficulty levels
+    enum class DifficultyLevel {
+        Easy, Harder, Expert
+    };
+    // Current difficulty level
+    private var mDifficultyLevel = DifficultyLevel.Expert
 
     private val board = CharArray(BOARD_SIZE) { OPEN_SPOT }
     private val random = Random()
@@ -28,7 +36,32 @@ class TicTacToeGame {
     }
 
     fun getComputerMove(): Int {
-        // Primero intentamos encontrar un movimiento para ganar
+        var move = -1
+        if (mDifficultyLevel == DifficultyLevel.Easy) move = getRandomMove()
+        else if (mDifficultyLevel == DifficultyLevel.Harder) {
+            move = getWinningMove()
+            if (move == -1) move = getRandomMove()
+        } else if (mDifficultyLevel == DifficultyLevel.Expert) {
+            // Try to win, but if that's not possible, block.
+            // If that's not possible, move anywhere.
+            move = getWinningMove()
+            if (move == -1) move = getBlockingMove()
+            if (move == -1) move = getRandomMove()
+        }
+        return move
+    }
+
+    private fun getRandomMove(): Int {
+        var move: Int
+        do {
+            move = random.nextInt(BOARD_SIZE)
+        } while (board[move] != OPEN_SPOT)
+
+        board[move] = COMPUTER_PLAYER
+        return move
+    }
+
+    private fun getWinningMove(): Int {
         for (i in board.indices) {
             if (board[i] == OPEN_SPOT) {
                 board[i] = COMPUTER_PLAYER
@@ -38,8 +71,10 @@ class TicTacToeGame {
                 board[i] = OPEN_SPOT // Revertimos si no es ganador
             }
         }
+        return -1
+    }
 
-        // Si no hay un movimiento ganador, intentamos bloquear al jugador
+    private fun getBlockingMove(): Int {
         for (i in board.indices) {
             if (board[i] == OPEN_SPOT) {
                 board[i] = HUMAN_PLAYER
@@ -50,15 +85,7 @@ class TicTacToeGame {
                 board[i] = OPEN_SPOT // Revertimos si no es un bloqueo
             }
         }
-
-        // Si no hay movimiento ganador ni de bloqueo, elegimos una posición aleatoria
-        var move: Int
-        do {
-            move = random.nextInt(BOARD_SIZE)
-        } while (board[move] != OPEN_SPOT)
-
-        board[move] = COMPUTER_PLAYER
-        return move
+        return -1
     }
 
     fun checkForWinner(): Int {
@@ -90,6 +117,14 @@ class TicTacToeGame {
 
         // Revisar si hay empate
         return if (board.none { it == OPEN_SPOT }) 1 else 0
+    }
+
+    fun getDifficultyLevel(): DifficultyLevel {
+        return mDifficultyLevel
+    }
+
+    fun setDifficultyLevel(difficultyLevel: DifficultyLevel) {
+        mDifficultyLevel = difficultyLevel
     }
 
 }

@@ -2,20 +2,23 @@ package co.edu.unal.reto1
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
+import android.app.Dialog
+import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
-
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
+import android.widget.Toolbar
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
+
 
 class AndroidTicTacToeActivity : Activity() {
     private lateinit var mBoardButtons: Array<Button>
@@ -34,12 +37,19 @@ class AndroidTicTacToeActivity : Activity() {
     private var tiesScore = 0
     private var androidScore = 0
 
+    private val DIALOG_DIFFICULTY_ID: Int = 0
+    private val DIALOG_ABOUT_ID: Int = 1
+    private val DIALOG_QUIT_ID: Int = 2
+
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         setContentView(R.layout.activity_main)
+
+        val toolbar: Toolbar? = findViewById(R.id.tool_bar)
+        setActionBar(toolbar)
 
         mBoardButtons = Array(9) { findViewById<Button>(resources.getIdentifier("button${it + 1}", "id", packageName)) }
         mInfoTextView = findViewById(R.id.information)
@@ -136,5 +146,105 @@ class AndroidTicTacToeActivity : Activity() {
      fun replay(view: View) {
         startNewGame()
     }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        val inflater = menuInflater
+        inflater.inflate(R.menu.options_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.ai_difficulty -> {
+                showDialog(DIALOG_DIFFICULTY_ID)
+                return true
+            }
+
+            R.id.quit -> {
+                showDialog(DIALOG_QUIT_ID)
+                return true
+            }
+
+            R.id.about -> {
+                showDialog(DIALOG_ABOUT_ID)
+                return true
+            }
+        }
+        return false
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onCreateDialog(id: Int): Dialog? {
+        var dialog: Dialog? = null
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+
+        when (id) {
+            DIALOG_DIFFICULTY_ID -> {
+                // Título del diálogo
+                builder.setTitle(R.string.difficulty_choose)
+
+
+                // Niveles de dificultad
+                val levels = arrayOf<CharSequence>(
+                    resources.getString(R.string.difficulty_easy),
+                    resources.getString(R.string.difficulty_harder),
+                    resources.getString(R.string.difficulty_expert)
+                )
+
+
+                // Aquí defines cuál radio button estará seleccionado inicialmente
+                val selected = 2 // Por ejemplo, el nivel fácil estará seleccionado
+
+                builder.setSingleChoiceItems(levels, selected,
+                    DialogInterface.OnClickListener { dialog, item ->
+                        dialog.dismiss() // Cierra el diálogo
+
+                        // TODO: Aquí puedes asignar la dificultad al juego según el elemento seleccionado
+                        val selectedDifficulty = when (item) {
+                            0 -> TicTacToeGame.DifficultyLevel.Easy
+                            1 -> TicTacToeGame.DifficultyLevel.Harder
+                            2 -> TicTacToeGame.DifficultyLevel.Expert
+                            else -> TicTacToeGame.DifficultyLevel.Expert // Por defecto, para evitar errores
+                        }
+                        mGame.setDifficultyLevel(selectedDifficulty)
+
+
+                        // Muestra un mensaje con el nivel seleccionado
+                        Toast.makeText(
+                            applicationContext,
+                            levels[item],
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        startNewGame()
+                    })
+
+
+                // Crea el diálogo
+                dialog = builder.create()
+            }
+            DIALOG_QUIT_ID -> {
+                // Create the quit confirmation dialog
+                builder.setMessage(R.string.quit_question)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.yes,
+//                        DialogInterface.OnClickListener { dialog, id -> this@AndroidTicTacToeActivity.finish() })
+                        DialogInterface.OnClickListener { dialog, id -> finishAffinity() })
+                    .setNegativeButton(R.string.no, null)
+                dialog = builder.create()
+            }
+            DIALOG_ABOUT_ID -> {
+                val context = applicationContext
+                val inflater = context.getSystemService(LAYOUT_INFLATER_SERVICE) as LayoutInflater
+                val layout: View = inflater.inflate(R.layout.about_dialog, null)
+                builder.setView(layout)
+                builder.setPositiveButton("OK", null)
+                dialog = builder.create()
+            }
+        }
+        return dialog
+    }
+
 
 }
