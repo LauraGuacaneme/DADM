@@ -20,6 +20,7 @@ class TicTacToeGame {
 
     private val board = CharArray(BOARD_SIZE) { OPEN_SPOT }
     private val random = Random()
+    var isGameOver = false
 
     // Limpiar el tablero
     fun clearBoard() {
@@ -29,10 +30,12 @@ class TicTacToeGame {
     }
 
     // Colocar un movimiento
-    fun setMove(player: Char, location: Int) {
+    fun setMove(player: Char, location: Int): Boolean {
         if (board[location] == OPEN_SPOT) {
             board[location] = player
+            return true
         }
+        return false
     }
 
     fun getComputerMove(): Int {
@@ -125,6 +128,10 @@ class TicTacToeGame {
 
     fun setDifficultyLevel(difficultyLevel: DifficultyLevel) {
         mDifficultyLevel = difficultyLevel
+    }
+
+    fun getBoardOccupant(location: Int): Char {
+        return board[location]
     }
 
 }

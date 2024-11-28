@@ -5,55 +5,77 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
-import android.graphics.Color
+import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.Handler
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.Toolbar
-import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.PackageManagerCompat.LOG_TAG
 import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
 
-
+/**
+ * Actividad principal para un juego de Tic-Tac-Toe en Android.
+ * Esta clase maneja la lógica del juego, la interfaz de usuario y las interacciones del jugador.
+ */
 class AndroidTicTacToeActivity : Activity() {
-    private lateinit var mBoardButtons: Array<Button>
+    // Elementos de la interfaz para mostrar información y puntajes
     private lateinit var mInfoTextView: TextView
-    private lateinit var mGame: TicTacToeGame
-    private lateinit var mReplayButton: MaterialButton
-
     private lateinit var mTiesScoteTextView: TextView
     private lateinit var mHumanScoteTextView: TextView
     private lateinit var mAndroidScoteTextView: TextView
 
+    // Instancia del juego y botón de reinicio
+    private lateinit var mGame: TicTacToeGame
+    private lateinit var mReplayButton: MaterialButton
+
+    // Variables para gestionar el estado del juego
     private var winner = 0
     private var isHumanTurnFirst = true // Indica si el jugador empieza primero
-
     private var humanScore = 0
     private var tiesScore = 0
     private var androidScore = 0
 
+    // IDs para diferentes diálogos
     private val DIALOG_DIFFICULTY_ID: Int = 0
     private val DIALOG_ABOUT_ID: Int = 1
     private val DIALOG_QUIT_ID: Int = 2
 
+    private lateinit var mBoardView: BoardView // Vista personalizada del tablero
+    private var mGameOver: Boolean = false
 
-    @SuppressLint("MissingInflatedId")
+    // Reproductores de sonido para movimientos de jugador y computadora
+    var mHumanMediaPlayer: MediaPlayer? = null
+    var mComputerMediaPlayer: MediaPlayer? = null
+
+    /**
+     * Llamado al crear la actividad.
+     * Inicializa los componentes y configura el juego.
+     */
+    @SuppressLint("MissingInflatedId", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         setContentView(R.layout.activity_main)
 
         val toolbar: Toolbar? = findViewById(R.id.tool_bar)
         setActionBar(toolbar)
 
-        mBoardButtons = Array(9) { findViewById<Button>(resources.getIdentifier("button${it + 1}", "id", packageName)) }
+//        mBoardButtons = Array(9) { findViewById<Button>(resources.getIdentifier("button${it + 1}", "id", packageName)) }
         mInfoTextView = findViewById(R.id.information)
+
         mGame = TicTacToeGame()
+        mBoardView = findViewById(R.id.board)
+        mBoardView.setGame(mGame)
+
+        // Asignar el TouchListener al BoardView
+        mBoardView.setOnTouchListener(mTouchListener)
+
 
         mReplayButton = findViewById<MaterialButton>(R.id.replayButton)
 
@@ -64,17 +86,22 @@ class AndroidTicTacToeActivity : Activity() {
         startNewGame()
     }
 
+    /**
+     * Inicia un nuevo juego y alterna el primer turno entre el jugador y la computadora.
+     */
     private fun startNewGame() {
         mGame.clearBoard()
 
         // Reiniciar los botones
-        mBoardButtons.forEachIndexed { index, button ->
-            button.text = " "
-            button.isEnabled = true
-            button.setOnClickListener(ButtonClickListener(index))
-        }
+//        mBoardButtons.forEachIndexed { index, button ->
+//            button.text = " "
+//            button.isEnabled = true
+//            button.setOnClickListener(ButtonClickListener(index))
+//        }
+        mBoardView.invalidate()
 
         mReplayButton.isVisible = false
+        mGameOver = false
         winner = 0
         if (isHumanTurnFirst) {
             mInfoTextView.text = getString(R.string.first_human)
@@ -87,63 +114,96 @@ class AndroidTicTacToeActivity : Activity() {
         isHumanTurnFirst = !isHumanTurnFirst // Alterna para la próxima partida
     }
 
-    private inner class ButtonClickListener(private val location: Int) : View.OnClickListener {
-        override fun onClick(view: View?) {
-            if (mBoardButtons[location].isEnabled) {
-                setMove(TicTacToeGame.HUMAN_PLAYER, location)
+    /**
+     * Listener para gestionar toques en el tablero.
+     */
+    @SuppressLint("ClickableViewAccessibility")
+    private val mTouchListener = View.OnTouchListener { _, event ->
+        val col = (event.x / mBoardView.getBoardCellWidth()).toInt()
+        val row = (event.y / mBoardView.getBoardCellHeight()).toInt()
+        val pos = row * 3 + col
 
-                winner = mGame.checkForWinner()
+        // Si el juego no ha terminado y el movimiento es válido
+        if (!mGameOver && setMove(TicTacToeGame.HUMAN_PLAYER, pos)) {
+            mHumanMediaPlayer?.start()
 
-                if (winner == 0) {
-                    mInfoTextView.text = getString(R.string.turn_computer)
+            winner = mGame.checkForWinner()
+            if (winner == 0) {
+                mInfoTextView.text = getString(R.string.turn_computer)
+
+                // Deshabilitar el tablero para evitar que el jugador haga movimientos
+                mBoardView.isEnabled = false
+
+                // Usar un Handler para retrasar el movimiento del computador
+                Handler().postDelayed({
                     val move = mGame.getComputerMove()
+                    mComputerMediaPlayer?.start()
                     setMove(TicTacToeGame.COMPUTER_PLAYER, move)
+
+
                     winner = mGame.checkForWinner()
 
-                }
-                if (winner != 0){
-                    mBoardButtons.forEachIndexed { _, button ->
-                        button.isEnabled = false
-                    }
+                    // Habilitar el tablero de nuevo después del movimiento del computador
+                    mBoardView.isEnabled = true
 
-                    mReplayButton.isVisible = true
-                }
+                    // Verificar ganador y actualizar la interfaz
+                    handleWinner()
+                }, 500) // Retraso de 500 milisegundos (medio segundo)
+            } else {
+                handleWinner()
+            }
+        }
+        false
+    }
 
-                when (winner) {
-                    0 -> mInfoTextView.text = getString(R.string.turn_human)
-                    1 -> {
-                        mInfoTextView.text = getString(R.string.result_tie)
-                        tiesScore++
-                        mTiesScoteTextView.text = "Ties: $tiesScore"
-                    }
-                    2 -> {
-                        mInfoTextView.text = getString(R.string.result_human_wins)
-                        humanScore++
-                        mHumanScoteTextView.text = "Player: $humanScore"
-                    }
-                    3 -> {
-                        mInfoTextView.text = getString(R.string.result_computer_wins)
-                        androidScore++
-                        mAndroidScoteTextView.text = "Android: $androidScore"
-                    }
-                }
+
+    /**
+     * Verifica el estado del juego y actualiza los puntajes y la interfaz según el ganador.
+     */
+    private fun handleWinner() {
+        if (winner != 0) {
+            mReplayButton.isVisible = true
+            mGameOver = true
+        }
+
+        when (winner) {
+            0 -> mInfoTextView.text = getString(R.string.turn_human)
+            1 -> {
+                mInfoTextView.text = getString(R.string.result_tie)
+                tiesScore++
+                mTiesScoteTextView.text = "Ties: $tiesScore"
+            }
+            2 -> {
+                mInfoTextView.text = getString(R.string.result_human_wins)
+                humanScore++
+                mHumanScoteTextView.text = "Player: $humanScore"
+            }
+            3 -> {
+                mInfoTextView.text = getString(R.string.result_computer_wins)
+                androidScore++
+                mAndroidScoteTextView.text = "Android: $androidScore"
             }
         }
     }
 
-    private fun setMove(player: Char, location: Int) {
-        mGame.setMove(player, location)
-        mBoardButtons[location].isEnabled = false
-        mBoardButtons[location].text = player.toString()
-
-        if (player == TicTacToeGame.HUMAN_PLAYER) {
-            mBoardButtons[location].setTextColor(Color.GREEN)
-        } else {
-            mBoardButtons[location].setTextColor(Color.RED)
+    /**
+     * Realiza un movimiento en el tablero.
+     * @param player Jugador que realiza el movimiento.
+     * @param location Posición en el tablero.
+     * @return True si el movimiento fue exitoso, false en caso contrario.
+     */
+    private fun setMove(player: Char, location: Int): Boolean {
+        if (mGame.setMove(player, location)) {
+            mBoardView.invalidate() // Redibujar el tablero para mostrar la imagen del jugador
+            return true
         }
+        return false
     }
 
-     fun replay(view: View) {
+    /**
+     * Reinicia el juego cuando se presiona el botón de reinicio.
+     */
+    fun replay(view: View) {
         startNewGame()
     }
 
@@ -246,5 +306,23 @@ class AndroidTicTacToeActivity : Activity() {
         return dialog
     }
 
+    /**
+     * Llamado al reanudar la actividad.
+     * Inicializa los sonidos para los movimientos.
+     */
+    override fun onResume() {
+        super.onResume()
+        mHumanMediaPlayer = MediaPlayer.create(applicationContext, R.raw.player_sound)
+        mComputerMediaPlayer = MediaPlayer.create(applicationContext, R.raw.computer_sound)
+    }
 
+    /**
+     * Llamado al pausar la actividad.
+     * Libera los recursos asociados a los reproductores de sonido.
+     */
+    override fun onPause() {
+        super.onPause()
+        mHumanMediaPlayer!!.release()
+        mComputerMediaPlayer!!.release()
+    }
 }
