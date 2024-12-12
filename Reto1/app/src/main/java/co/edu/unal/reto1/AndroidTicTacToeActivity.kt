@@ -5,10 +5,10 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -16,9 +16,9 @@ import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import android.widget.Toolbar
-import androidx.core.content.PackageManagerCompat.LOG_TAG
 import androidx.core.view.isVisible
 import com.google.android.material.button.MaterialButton
+
 
 /**
  * Actividad principal para un juego de Tic-Tac-Toe en Android.
@@ -27,9 +27,9 @@ import com.google.android.material.button.MaterialButton
 class AndroidTicTacToeActivity : Activity() {
     // Elementos de la interfaz para mostrar información y puntajes
     private lateinit var mInfoTextView: TextView
-    private lateinit var mTiesScoteTextView: TextView
-    private lateinit var mHumanScoteTextView: TextView
-    private lateinit var mAndroidScoteTextView: TextView
+    private lateinit var mTiesScoreTextView: TextView
+    private lateinit var mHumanScoreTextView: TextView
+    private lateinit var mAndroidScoreTextView: TextView
 
     // Instancia del juego y botón de reinicio
     private lateinit var mGame: TicTacToeGame
@@ -45,7 +45,8 @@ class AndroidTicTacToeActivity : Activity() {
     // IDs para diferentes diálogos
     private val DIALOG_DIFFICULTY_ID: Int = 0
     private val DIALOG_ABOUT_ID: Int = 1
-    private val DIALOG_QUIT_ID: Int = 2
+//    private val DIALOG_QUIT_ID: Int = 2
+    private val DIALOG_RESET_SCORES_ID: Int = 2
 
     private lateinit var mBoardView: BoardView // Vista personalizada del tablero
     private var mGameOver: Boolean = false
@@ -53,6 +54,8 @@ class AndroidTicTacToeActivity : Activity() {
     // Reproductores de sonido para movimientos de jugador y computadora
     var mHumanMediaPlayer: MediaPlayer? = null
     var mComputerMediaPlayer: MediaPlayer? = null
+
+    private var mPrefs: SharedPreferences? = null
 
     /**
      * Llamado al crear la actividad.
@@ -79,11 +82,37 @@ class AndroidTicTacToeActivity : Activity() {
 
         mReplayButton = findViewById<MaterialButton>(R.id.replayButton)
 
-        mTiesScoteTextView = findViewById(R.id.tiesScore)
-        mHumanScoteTextView = findViewById(R.id.playerScore)
-        mAndroidScoteTextView = findViewById(R.id.androidScore)
+        mTiesScoreTextView = findViewById(R.id.tiesScore)
+        mHumanScoreTextView = findViewById(R.id.playerScore)
+        mAndroidScoreTextView = findViewById(R.id.androidScore)
 
-        startNewGame()
+        mPrefs = getSharedPreferences("ttt_prefs", MODE_PRIVATE);
+
+        // Restore the scores
+        humanScore = mPrefs!!.getInt("mHumanWins", 0);
+        androidScore = mPrefs!!.getInt("mComputerWins", 0);
+        tiesScore = mPrefs!!.getInt("mTies", 0);
+
+        if (savedInstanceState == null) {
+            startNewGame();
+        }
+        else {
+            // Restore the game's state
+            savedInstanceState.getCharArray("board")?.let { mGame.setBoardState(it) }
+            mGameOver = savedInstanceState.getBoolean("mGameOver")
+            mInfoTextView.text = savedInstanceState.getCharSequence("info")
+            humanScore = savedInstanceState.getInt("mHumanWins")
+            androidScore = savedInstanceState.getInt("mComputerWins")
+            tiesScore = savedInstanceState.getInt("mTies")
+            isHumanTurnFirst = savedInstanceState.getBoolean("mGoFirst")
+            winner = savedInstanceState.getInt("winner")
+            if (winner != 0) {
+                mReplayButton.isVisible = true
+                mGameOver = true
+            }
+        }
+        displayScores()
+
     }
 
     /**
@@ -114,6 +143,12 @@ class AndroidTicTacToeActivity : Activity() {
         isHumanTurnFirst = !isHumanTurnFirst // Alterna para la próxima partida
     }
 
+    @SuppressLint("SetTextI18n")
+    private fun displayScores() {
+        mHumanScoreTextView.text = "Player: $humanScore"
+        mAndroidScoreTextView.text = "Android: $androidScore"
+        mTiesScoreTextView.text = "Ties: $tiesScore"
+    }
     /**
      * Listener para gestionar toques en el tablero.
      */
@@ -160,6 +195,7 @@ class AndroidTicTacToeActivity : Activity() {
     /**
      * Verifica el estado del juego y actualiza los puntajes y la interfaz según el ganador.
      */
+    @SuppressLint("SetTextI18n")
     private fun handleWinner() {
         if (winner != 0) {
             mReplayButton.isVisible = true
@@ -171,17 +207,17 @@ class AndroidTicTacToeActivity : Activity() {
             1 -> {
                 mInfoTextView.text = getString(R.string.result_tie)
                 tiesScore++
-                mTiesScoteTextView.text = "Ties: $tiesScore"
+                mTiesScoreTextView.text = "Ties: $tiesScore"
             }
             2 -> {
                 mInfoTextView.text = getString(R.string.result_human_wins)
                 humanScore++
-                mHumanScoteTextView.text = "Player: $humanScore"
+                mHumanScoreTextView.text = "Player: $humanScore"
             }
             3 -> {
                 mInfoTextView.text = getString(R.string.result_computer_wins)
                 androidScore++
-                mAndroidScoteTextView.text = "Android: $androidScore"
+                mAndroidScoreTextView.text = "Android: $androidScore"
             }
         }
     }
@@ -221,8 +257,8 @@ class AndroidTicTacToeActivity : Activity() {
                 return true
             }
 
-            R.id.quit -> {
-                showDialog(DIALOG_QUIT_ID)
+            R.id.reset_scores -> {
+                showDialog(DIALOG_RESET_SCORES_ID)
                 return true
             }
 
@@ -284,13 +320,21 @@ class AndroidTicTacToeActivity : Activity() {
                 // Crea el diálogo
                 dialog = builder.create()
             }
-            DIALOG_QUIT_ID -> {
+            DIALOG_RESET_SCORES_ID -> {
                 // Create the quit confirmation dialog
-                builder.setMessage(R.string.quit_question)
+//                builder.setMessage(R.string.quit_question)
+                builder.setMessage(R.string.reset_question)
                     .setCancelable(false)
                     .setPositiveButton(R.string.yes,
 //                        DialogInterface.OnClickListener { dialog, id -> this@AndroidTicTacToeActivity.finish() })
-                        DialogInterface.OnClickListener { dialog, id -> finishAffinity() })
+                        DialogInterface.OnClickListener { dialog, id ->
+                            dialog.dismiss()
+                            humanScore = 0
+                            androidScore = 0
+                            tiesScore = 0
+                            displayScores()
+                            startNewGame()
+                        })
                     .setNegativeButton(R.string.no, null)
                 dialog = builder.create()
             }
@@ -324,5 +368,27 @@ class AndroidTicTacToeActivity : Activity() {
         super.onPause()
         mHumanMediaPlayer!!.release()
         mComputerMediaPlayer!!.release()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putCharArray("board", mGame.getBoardState())
+        outState.putBoolean("mGameOver", mGameOver)
+        outState.putInt("mHumanWins", Integer.valueOf(humanScore))
+        outState.putInt("mComputerWins", Integer.valueOf(androidScore))
+        outState.putInt("mTies", Integer.valueOf(tiesScore))
+        outState.putCharSequence("info", mInfoTextView.text)
+        outState.putBoolean("mGoFirst", isHumanTurnFirst)
+        outState.putInt("winner", winner)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Save the current scores
+        val ed = mPrefs!!.edit()
+        ed.putInt("mHumanWins", humanScore)
+        ed.putInt("mComputerWins", androidScore)
+        ed.putInt("mTies", tiesScore)
+        ed.apply()
     }
 }

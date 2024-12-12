@@ -134,4 +134,12 @@ class TicTacToeGame {
         return board[location]
     }
 
+    fun getBoardState(): CharArray {
+        return board
+    }
+
+    fun setBoardState(state: CharArray){
+        state.copyInto(board)
+    }
+
 }

@@ -12,8 +12,8 @@
         android:title="About"
         app:showAsAction="always" />
     <item
-        android:id="@+id/quit"
+        android:id="@+id/reset_scores"
         android:icon="@drawable/ic_exit"
-        android:title="Quit"
+        android:title="Reset Scores"
         app:showAsAction="always" />
 </menu>
