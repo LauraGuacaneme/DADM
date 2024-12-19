@@ -96,7 +96,7 @@ class TicTacToeGame {
         for (i in 0..6 step 3) {
             if (board[i] == board[i + 1] && board[i + 1] == board[i + 2]) {
                 if (board[i] == HUMAN_PLAYER) return 2
-                if (board[i] == COMPUTER_PLAYER) return 3
+                if (board[i] == COMPUTER_PLAYER) return 2
             }
         }
 
@@ -104,18 +104,18 @@ class TicTacToeGame {
         for (i in 0..2) {
             if (board[i] == board[i + 3] && board[i + 3] == board[i + 6]) {
                 if (board[i] == HUMAN_PLAYER) return 2
-                if (board[i] == COMPUTER_PLAYER) return 3
+                if (board[i] == COMPUTER_PLAYER) return 2
             }
         }
 
         // Revisar diagonales
         if (board[0] == board[4] && board[4] == board[8]) {
             if (board[0] == HUMAN_PLAYER) return 2
-            if (board[0] == COMPUTER_PLAYER) return 3
+            if (board[0] == COMPUTER_PLAYER) return 2
         }
         if (board[2] == board[4] && board[4] == board[6]) {
             if (board[2] == HUMAN_PLAYER) return 2
-            if (board[2] == COMPUTER_PLAYER) return 3
+            if (board[2] == COMPUTER_PLAYER) return 2
         }
 
         // Revisar si hay empate

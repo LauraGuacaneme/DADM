@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/border.xml -->
+<shape xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    tools:ignore="ExtraText">
+    <stroke
+        android:color="@android:color/secondary_text_light"
+        android:width="2dp" />   <!-- Ancho del borde -->
+    <corners android:radius="8dp" /> <!-- Esquinas redondeadas -->
+</shape>
