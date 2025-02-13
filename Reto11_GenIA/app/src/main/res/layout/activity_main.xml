@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@drawable/background_gradient">
+
+    <!-- Campo de texto para el prompt -->
+    <EditText
+        android:id="@+id/promptInput"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginBottom="15dp"
+        android:background="@drawable/background_input_text"
+        android:hint="Ingresa tu prompt aquí"
+        android:paddingStart="5dp" />
+
+    <!-- Botón para generar el texto -->
+    <Button
+        android:id="@+id/generateButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Generar texto"
+        android:background="@drawable/background_edit_text"/>
+
+    <!-- Área para mostrar el texto generado -->
+    <TextView
+        android:id="@+id/outputText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textColor="#072124"
+        android:textSize="16sp" />
+</LinearLayout>

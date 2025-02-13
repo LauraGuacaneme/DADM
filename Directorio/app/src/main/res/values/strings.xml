@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Directorio</string>
+    <string name="title_activity_agregar_editar">AgregarEditarActivity</string>
+</resources>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Nombre de la empresa -->
+        <EditText
+            android:id="@+id/etNombreEmpresa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre de la empresa"
+            android:inputType="text"
+            android:padding="12dp"
+            android:background="@drawable/background_input_text"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- URL de la página web -->
+        <EditText
+            android:id="@+id/etURL"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="URL de la página web"
+            android:inputType="textUri"
+            android:padding="12dp"
+            android:background="@drawable/background_input_text"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Teléfono de contacto -->
+        <EditText
+            android:id="@+id/etTelefono"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Teléfono de contacto"
+            android:inputType="phone"
+            android:padding="12dp"
+            android:background="@drawable/background_input_text"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Email de contacto -->
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email de contacto"
+            android:inputType="textEmailAddress"
+            android:padding="12dp"
+            android:background="@drawable/background_input_text"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Productos y servicios -->
+        <EditText
+            android:id="@+id/etProductosServicios"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Productos y servicios"
+            android:inputType="textMultiLine"
+            android:minHeight="100dp"
+            android:padding="12dp"
+            android:background="@drawable/background_input_text"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Clasificación -->
+        <Spinner
+            android:id="@+id/spClasificacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Botón Guardar -->
+        <Button
+            android:id="@+id/btnGuardar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@drawable/background_edit_text"
+            android:text="Guardar"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+</ScrollView>

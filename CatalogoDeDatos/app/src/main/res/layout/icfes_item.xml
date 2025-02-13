@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- icfe_item.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/item_background" android:layout_marginBottom="16dp">
+
+    <TextView
+        android:id="@+id/icfesName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nombre" />
+
+    <TextView
+        android:id="@+id/icfesCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Categoría" />
+
+    <TextView
+        android:id="@+id/icfesDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fecha" />
+
+    <TextView
+        android:id="@+id/icfesResponsable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Responsable" />
+
+    <TextView
+        android:id="@+id/icfesExcepcion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Excepción" />
+
+
+</LinearLayout>
